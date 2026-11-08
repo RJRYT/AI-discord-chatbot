@@ -102,8 +102,7 @@ export async function runAI({
       messages,
       tools: toolDefinitions,
       temperature: 0.7,
-      maxTokens: 1800,
-      includeServerTools
+      maxTokens: 1800
     });
 
     const message = response?.choices?.[0]?.message;

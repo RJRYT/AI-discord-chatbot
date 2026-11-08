@@ -55,7 +55,7 @@ async function requestWithRetry(body) {
   throw lastError || new NVIDIAError("NVIDIA request failed.");
 }
 
-export async function createChatCompletion({ messages, tools = [], includeServerTools = true, temperature = 0.7, maxTokens = 1800 }) {
+export async function createChatCompletion({ messages, tools = [], temperature = 0.7, maxTokens = 1800 }) {
   const body = {
     model: process.env.NVIDIA_MODEL || "nvidia/nemotron-3.5-super-vl-120b-a12b",
     messages,
@@ -63,9 +63,8 @@ export async function createChatCompletion({ messages, tools = [], includeServer
     max_tokens: maxTokens
   };
 
-  const allTools = [...(includeServerTools ? getEnabledServerTools() : []), ...tools];
-  if (allTools.length) {
-    body.tools = allTools;
+  if (tools.length) {
+    body.tools = tools;
     body.tool_choice = "auto";
   }
 
