@@ -36,7 +36,6 @@ import {
   createToolDeclarations,
   executeDiscordTool,
 } from "./tools.js";
-import { NVIDIAError, getEnabledServerTools } from "./nvidia.js";
 import { humanizeError } from "./errors.js";
 import { logError, logWarning, closeErrorLog } from "./error-logger.js";
 
@@ -584,20 +583,6 @@ printBanner();
 client.once(Events.ClientReady, (readyClient) => {
   printSection("Bot Ready");
   printKeyValue("Logged in as", readyClient.user.tag);
-  printKeyValue(
-    "Nemotron model",
-    process.env.NVIDIA_MODEL || "nvidia/nemotron-3.5-super-vl-120b-a12b"
-  );
-  printKeyValue("Owner", OWNER_USER_ID);
-  printKeyValue("Confirmation system", "disabled");
-  printKeyValue("Autochat", "/autochat enable|disable|status|list");
-  printKeyValue("Per-channel queue", "enabled");
-  printKeyValue(
-    "NVIDIA server tools",
-    getEnabledServerTools()
-      .map((tool) => tool.type)
-      .join(", ") || "none"
-  );
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {

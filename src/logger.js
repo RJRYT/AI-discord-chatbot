@@ -19,14 +19,6 @@ const colors = {
 };
 
 const ASCII_BANNER = `
-${colors.cyan}${colors.bright}
-  ____  _             _            _       _   _                 
- |  _ \| |           | |          | |     | | (_)                
- | |_) | |__   ___ __| | ___   ___| |_ ___| |_ _ _ __   __ _     
- |  _ <| '_ \ / _ \`/ _\` |/ _ \ / __| __/ __| __| | '_ \ / _\` |    
- | |_) | | | |  __/ (_| | (_) | (__| |_\__ \ |_| | | | | (_| |    
- |____/|_| |_|\___|\__,_|\___/ \__|___/\__|_|_| |_|\__,_|    
-${colors.reset}
 ${colors.green}${colors.bright}  NVIDIA Nemotron Discord AI Admin Bot${colors.reset}
 ${colors.dim}  Powered by NVIDIA Nemotron API • discord.js v14${colors.reset}
 `;
