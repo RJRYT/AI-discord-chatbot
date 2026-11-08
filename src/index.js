@@ -710,20 +710,18 @@ client.on(Events.MessageCreate, async (message) => {
     prompt = cleanBotMention(prompt);
     if (!prompt) return;
 
-    await queueChannel(message.guild.id, message.channel.id, async () => {
-      await processAI(
-        {
-          type: "message",
-          message,
-          guild: message.guild,
-          channel: message.channel,
-          requester: requesterFromMessage(message),
-          enforceCooldown: !autochat,
-          autochat,
-        },
-        prompt
-      );
-    });
+    await processAI(
+      {
+        type: "message",
+        message,
+        guild: message.guild,
+        channel: message.channel,
+        requester: requesterFromMessage(message),
+        enforceCooldown: !autochat,
+        autochat,
+      },
+      prompt
+    );
   } catch (error) {
     logError("MessageCreate", error, {
       guildId: message.guild.id,
