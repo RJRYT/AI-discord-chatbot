@@ -4,6 +4,8 @@ import {
   PermissionsBitField
 } from "discord.js";
 
+import crypto from "node:crypto";
+
 import { extractSnowflake, normalizeChannelName, splitForDiscord } from "./discord-utils.js";
 import { addAdmin, getGuildAdmins, removeAdmin } from "./storage.js";
 
@@ -822,6 +824,53 @@ export function createToolDeclarations({ canAdmin, canGrantAdmin }) {
     );
   }
 
+  if (!canAdmin) {
+    tools.push(
+      baseTool(
+        "dice_roll",
+        "Roll dice using standard notation like 1d20, 2d6+3, or 3d8-1.",
+        {
+          notation: { type: "string", description: "Dice notation (e.g. 1d20, 2d6+3)" },
+          modifier: { type: "integer", description: "Additional modifier to add to the total", minimum: -1000, maximum: 1000 }
+        },
+        ["notation"]
+      ),
+      baseTool(
+        "uuid_generate",
+        "Generate a random UUID v4 identifier.",
+        {},
+        []
+      ),
+      baseTool(
+        "base64_encode",
+        "Encode text to Base64.",
+        { text: { type: "string", description: "Text to encode" } },
+        ["text"]
+      ),
+      baseTool(
+        "base64_decode",
+        "Decode Base64 text back to plain text.",
+        { encoded: { type: "string", description: "Base64 encoded text to decode" } },
+        ["encoded"]
+      ),
+      baseTool(
+        "hash_text",
+        "Hash text using SHA-256 or MD5 algorithm.",
+        {
+          text: { type: "string", description: "Text to hash" },
+          algorithm: { type: "string", enum: ["sha256", "md5"], default: "sha256", description: "Hash algorithm to use" }
+        },
+        ["text"]
+      ),
+      baseTool(
+        "json_format",
+        "Validate and pretty-print JSON text.",
+        { json: { type: "string", description: "JSON text to format" } },
+        ["json"]
+      )
+    );
+  }
+
   return tools;
 }
 
@@ -907,7 +956,14 @@ export const TOOL_STATUS = {
   move_member_voice: "Moving member in voice...",
   disconnect_member_voice: "Disconnecting member from voice...",
   deafen_member: "Deafening member...",
-  undeafen_member: "Removing member deafening..."
+  undeafen_member: "Removing member deafening...",
+
+  dice_roll: "Rolling dice...",
+  uuid_generate: "Generating UUID...",
+  base64_encode: "Encoding Base64...",
+  base64_decode: "Decoding Base64...",
+  hash_text: "Hashing text...",
+  json_format: "Formatting JSON..."
 };
 
 export async function executeDiscordTool({
@@ -1917,6 +1973,98 @@ export async function executeDiscordTool({
       if (!member.voice.channelId) throw new Error("That member is not connected to a voice channel.");
       await member.voice.setDeaf(false, reason);
       return { success: true, message: `Removed server deafening from ${member.user.tag}.` };
+    }
+
+    case "dice_roll": {
+      const notation = String(args.notation || "").trim();
+      if (!notation) throw new Error("Dice notation is required.");
+      const match = notation.match(/^(\d+)d(\d+)([+-]\d+)?$/i);
+      if (!match) throw new Error("Invalid dice notation.");
+      const count = Math.min(Math.max(parseInt(match[1], 10), 1), 100);
+      const sides = Math.min(Math.max(parseInt(match[2], 10), 1), 1000);
+      const flatMod = match[3] ? parseInt(match[3], 10) : 0;
+      const extraMod = Number.isInteger(args.modifier) ? args.modifier : 0;
+      const rolls = [];
+      let total = 0;
+      for (let i = 0; i < count; i++) {
+        const roll = Math.floor(Math.random() * sides) + 1;
+        rolls.push(roll);
+        total += roll;
+      }
+      const finalTotal = total + flatMod + extraMod;
+      return {
+        success: true,
+        notation,
+        rolls,
+        total: finalTotal,
+        message: `Rolled ${notation}: [${rolls.join(", ")}] = **${finalTotal}**`
+      };
+    }
+
+    case "uuid_generate": {
+      const id = crypto.randomUUID();
+      return {
+        success: true,
+        uuid: id,
+        message: `Generated UUID: ${id}`
+      };
+    }
+
+    case "base64_encode": {
+      const text = String(args.text ?? "");
+      if (!text) throw new Error("Text to encode cannot be empty.");
+      const encoded = Buffer.from(text, "utf8").toString("base64");
+      return {
+        success: true,
+        encoded,
+        message: `Base64 encoded: ${encoded}`
+      };
+    }
+
+    case "base64_decode": {
+      const encoded = String(args.encoded ?? "").trim();
+      if (!encoded) throw new Error("Base64 text to decode cannot be empty.");
+      try {
+        const decoded = Buffer.from(encoded, "base64").toString("utf8");
+        return {
+          success: true,
+          decoded,
+          message: `Base64 decoded: ${decoded}`
+        };
+      } catch {
+        throw new Error("Invalid Base64 input.");
+      }
+    }
+
+    case "hash_text": {
+      const text = String(args.text ?? "");
+      if (!text) throw new Error("Text to hash cannot be empty.");
+      const algorithm = String(args.algorithm || "sha256").toLowerCase();
+      if (!["sha256", "md5"].includes(algorithm)) {
+        throw new Error("Algorithm must be sha256 or md5.");
+      }
+      const hash = crypto.createHash(algorithm).update(text, "utf8").digest("hex");
+      return {
+        success: true,
+        algorithm,
+        hash,
+        message: `${algorithm.toUpperCase()} hash: ${hash}`
+      };
+    }
+
+    case "json_format": {
+      const raw = String(args.json ?? "");
+      if (!raw.trim()) throw new Error("JSON text cannot be empty.");
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch (err) {
+        throw new Error(`Invalid JSON: ${err.message}`);
+      }
+      const formatted = JSON.stringify(parsed, null, 2);
+      return {
+        success: true,
+        formatted,
+        message: `Formatted JSON:\n${formatted}`
+      };
     }
 
     default:
