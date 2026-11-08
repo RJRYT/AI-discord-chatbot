@@ -14,7 +14,7 @@ const DISCORD_MESSAGES = new Map([
 function cleanText(value) {
   return String(value ?? "")
     .replace(/https:\/\/discord(?:\.gg|\.com\/invite)\/[A-Za-z0-9_-]+/gi, "[invite-url]")
-    .replace(/sk-or-v1-[A-Za-z0-9_-]+/gi, "[api-key]")
+    .replace(/nvapi-[A-Za-z0-9_-]+/gi, "[api-key]")
     .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, "Bearer [redacted]")
     .trim();
 }
@@ -32,7 +32,7 @@ export function humanizeError(error, fallback = "Something went wrong.") {
   if (status === 429 || /rate.?limit/i.test(String(error?.message || ""))) {
     const retryAfter = Number(error?.retryAfter);
     return Number.isFinite(retryAfter)
-      ? `Discord/OpenRouter rate limit reached. Please try again in ${Math.ceil(retryAfter)} seconds.`
+      ? `Discord/NVIDIA rate limit reached. Please try again in ${Math.ceil(retryAfter)} seconds.`
       : "Rate limit reached. Please try again in a moment.";
   }
 
@@ -40,7 +40,7 @@ export function humanizeError(error, fallback = "Something went wrong.") {
     return "The AI request timed out before a response was received.";
   }
 
-  if (error?.name === "OpenRouterError" && error?.message) {
+  if (error?.name === "NVIDIAError" && error?.message) {
     return cleanText(error.message);
   }
 

@@ -1,14 +1,14 @@
-# OpenRouter Discord AI Admin Bot
+# NVIDIA Nemotron Discord AI Admin Bot
 
-Discord.js bot using OpenRouter's OpenAI-compatible Chat Completions API.
-The default model is `openrouter/free`, which automatically selects a compatible free OpenRouter model.
+Discord.js bot using NVIDIA's Nemotron API via `https://integrate.api.nvidia.com/v1/chat/completions`.
+The default model is `nvidia/nemotron-3.5-super-vl-120b-a12b`.
 
 ## Features
 
 - Natural Discord chat when mentioned or replied to
 - `/ai` chat command
 - `/summary`
-- OpenRouter free-model routing
+- NVIDIA Nemotron model routing
 - Tool calling
 - Visible AI progress message with elapsed time
 - Heartbeat status updates while the AI is working
@@ -22,11 +22,10 @@ The default model is `openrouter/free`, which automatically selects a compatible
 - Audit log lookup
 - Invite create/delete
 - Owner-only AI admin grant/revoke/list
-- Confirmation for dangerous actions
 - JSON persistence for AI admins
 - Discord role hierarchy checks
 - Owner/bot protection
-- OpenRouter retry handling for transient 429/5xx/network failures
+- NVIDIA API retry handling for transient failures
 
 ## Install
 
@@ -44,10 +43,27 @@ npm start
 ## Default model
 
 ```env
-OPENROUTER_MODEL=openrouter/free
+NVIDIA_MODEL=nvidia/nemotron-3.5-super-vl-120b-a12b
 ```
 
-You can replace it with another OpenRouter model ID later.
+You can replace it with another NVIDIA model ID later.
+
+## Required environment variables
+
+- `DISCORD_TOKEN` — Discord bot token
+- `CLIENT_ID` — Discord application client ID
+- `OWNER_USER_ID` — Your Discord user ID (bot owner)
+- `NVIDIA_API_KEY` — NVIDIA API key (starts with `nvapi-`)
+
+Optional:
+
+- `NVIDIA_MAX_RETRIES` — max retry attempts (default: 4)
+- `NVIDIA_RETRY_BASE_MS` — base retry delay in ms (default: 1200)
+- `CHANNEL_HISTORY` — recent messages to read as context (default: 50, max: 1000)
+- `MAX_AI_TOOL_LOOPS` — max AI tool-calling iterations (default: 10)
+- `AI_COOLDOWN_MS` — cooldown between AI requests per user (default: 2500)
+- `AUTOCHAT_COOLDOWN_MS` — cooldown between autochat replies per channel (default: 8000)
+- `STATUS_HEARTBEAT_MS` — heartbeat interval while AI is working (default: 2500)
 
 ## Required Discord intents
 

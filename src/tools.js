@@ -828,7 +828,7 @@ export function createToolDeclarations({ canAdmin, canGrantAdmin }) {
 function makeReason(requester, args) {
   return String(
     args.reason ||
-      `Requested by ${requester.username} via OpenRouter AI`
+      `Requested by ${requester.username} via NVIDIA Nemotron`
   ).slice(0, 512);
 }
 

@@ -21,9 +21,9 @@ import { fetchChannelMessages, formatMessagesForAI, splitForDiscord, summarizeTo
 import { runAI } from "./ai.js";
 import { TOOL_STATUS, createToolDeclarations, executeDiscordTool } from "./tools.js";
 import {
-  OpenRouterError,
+  NVIDIAError,
   getEnabledServerTools
-} from "./openrouter.js";
+} from "./nvidia.js";
 import { humanizeError } from "./errors.js";
 
 const DISCORD_TOKEN = process.env.DISCORD_TOKEN;
@@ -33,7 +33,7 @@ const OWNER_USER_ID = process.env.OWNER_USER_ID;
 if (!DISCORD_TOKEN) throw new Error("DISCORD_TOKEN is missing");
 if (!CLIENT_ID) throw new Error("CLIENT_ID is missing");
 if (!OWNER_USER_ID) throw new Error("OWNER_USER_ID is missing");
-if (!process.env.OPENROUTER_API_KEY) throw new Error("OPENROUTER_API_KEY is missing");
+if (!process.env.NVIDIA_API_KEY) throw new Error("NVIDIA_API_KEY is missing");
 
 const client = new Client({
   intents: [

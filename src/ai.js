@@ -1,4 +1,4 @@
-import { createChatCompletion, OpenRouterError } from "./openrouter.js";
+import { createChatCompletion, NVIDIAError } from "./nvidia.js";
 
 const SYSTEM_PROMPT = `
 You are a Discord AI assistant with Discord administration tools.
@@ -39,13 +39,13 @@ DANGEROUS ACTIONS:
 - Never claim an action succeeded unless the tool result confirms it.
 
 MODEL:
-- You are powered by NVIDIA Nemotron via OpenRouter. Respond concisely, naturally, and helpfully.
+- You are powered by NVIDIA Nemotron. Respond concisely, naturally, and helpfully.
 
 WEB / TIME TOOLS:
 - Web search can be used for current information.
 - Web fetch can be used to read a specific web page or URL.
 - Datetime can be used whenever the exact current time/date matters.
-- These are OpenRouter server tools; do not pretend you performed a web lookup if the server did not return results.
+- Web tools are not available; do not pretend you performed a web lookup.
 
 STYLE:
 - Be concise and natural.
@@ -109,8 +109,8 @@ export async function runAI({
     const message = response?.choices?.[0]?.message;
 
     if (!message) {
-      throw new OpenRouterError(
-        "OpenRouter returned an empty response.",
+      throw new NVIDIAError(
+        "NVIDIA returned an empty response.",
         { raw: response }
       );
     }
@@ -189,7 +189,7 @@ export async function runAI({
     }
   }
 
-  throw new OpenRouterError(
+  throw new NVIDIAError(
     "Maximum AI tool-call iterations reached."
   );
 }

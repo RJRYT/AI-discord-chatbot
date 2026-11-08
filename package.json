@@ -1,7 +1,7 @@
 {
   "name": "nemotron-discord-master-bot",
   "version": "2.0.0",
-  "description": "Master Discord AI admin bot powered by NVIDIA Nemotron on OpenRouter. Combines all features from three projects into one optimized bot.",
+  "description": "Master Discord AI admin bot powered by NVIDIA Nemotron API. Combines all features from three projects into one optimized bot.",
   "type": "module",
   "main": "src/index.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "discord",
     "ai",
     "nemotron",
-    "openrouter",
+    "nvidia",
     "discord-bot",
     "ai-admin"
   ],
