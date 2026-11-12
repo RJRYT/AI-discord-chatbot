@@ -1,4 +1,4 @@
-import { createChatCompletion, NVIDIAError } from "./nvidia.js";
+import { createChatCompletion, NVIDIAError } from './nvidia.js';
 
 const SYSTEM_PROMPT = `
 You are a Discord AI assistant with Discord administration tools.
@@ -54,7 +54,7 @@ STYLE:
 `.trim();
 
 function safeText(value) {
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     return value;
   }
 
@@ -68,7 +68,7 @@ function safeText(value) {
 export async function runAI({
   prompt,
   channelContext,
-  referenceContext = "",
+  referenceContext = '',
   requester,
   canAdmin,
   canGrantAdmin,
@@ -76,61 +76,54 @@ export async function runAI({
   executeTool,
   onStatus,
   onToolStart,
-  includeServerTools = true
+  includeServerTools = true,
 }) {
   const systemMessage = {
-    role: "system",
-    content: `${SYSTEM_PROMPT}\n\nREQUESTER:\nUsername: ${requester.username}\nDisplay name: ${requester.displayName}\nUser ID: ${requester.userId}\nGuild ID: ${requester.guildId}\nCurrent channel: ${requester.channelName}\nCurrent channel ID: ${requester.channelId}\nCan use administration tools: ${canAdmin ? "YES" : "NO"}\nCan grant/revoke AI admin: ${canGrantAdmin ? "YES" : "NO"}\n\nREFERENCED MESSAGE CONTEXT:\n${referenceContext || "[none]"}\n\nRECENT CHANNEL CONTEXT:\n${channelContext || "[none]"}`
+    role: 'system',
+    content: `${SYSTEM_PROMPT}\n\nREQUESTER:\nUsername: ${requester.username}\nDisplay name: ${requester.displayName}\nUser ID: ${requester.userId}\nGuild ID: ${requester.guildId}\nCurrent channel: ${requester.channelName}\nCurrent channel ID: ${requester.channelId}\nCan use administration tools: ${canAdmin ? 'YES' : 'NO'}\nCan grant/revoke AI admin: ${canGrantAdmin ? 'YES' : 'NO'}\n\nREFERENCED MESSAGE CONTEXT:\n${referenceContext || '[none]'}\n\nRECENT CHANNEL CONTEXT:\n${channelContext || '[none]'}`,
   };
 
   const messages = [
     systemMessage,
     {
-      role: "user",
-      content: prompt
-    }
+      role: 'user',
+      content: prompt,
+    },
   ];
 
   for (let iteration = 0; iteration < 10; iteration++) {
     await onStatus?.(
       iteration === 0
-        ? "🧠 Nemotron is thinking..."
-        : `🧠 Nemotron is processing step ${iteration + 1}...`
+        ? '🧠 Nemotron is thinking...'
+        : `🧠 Nemotron is processing step ${iteration + 1}...`,
     );
 
     const response = await createChatCompletion({
       messages,
       tools: toolDefinitions,
       temperature: 0.7,
-      maxTokens: 1800
+      maxTokens: 1800,
     });
 
     const message = response?.choices?.[0]?.message;
 
     if (!message) {
-      throw new NVIDIAError(
-        "NVIDIA returned an empty response.",
-        { raw: response }
-      );
+      throw new NVIDIAError('NVIDIA returned an empty response.', { raw: response });
     }
 
     messages.push(message);
 
-    const toolCalls = Array.isArray(message.tool_calls)
-      ? message.tool_calls
-      : [];
+    const toolCalls = Array.isArray(message.tool_calls) ? message.tool_calls : [];
 
     if (!toolCalls.length) {
       const content =
-        typeof message.content === "string"
-          ? message.content.trim()
-          : safeText(message.content);
+        typeof message.content === 'string' ? message.content.trim() : safeText(message.content);
 
       return {
-        type: "final",
+        type: 'final',
         text: content || "I couldn't generate a response.",
         usage: response.usage || null,
-        model: response.model || null
+        model: response.model || null,
       };
     }
 
@@ -138,57 +131,42 @@ export async function runAI({
       let args = {};
 
       try {
-        args = call.function?.arguments
-          ? JSON.parse(call.function.arguments)
-          : {};
+        args = call.function?.arguments ? JSON.parse(call.function.arguments) : {};
       } catch {
-        await onToolStart?.(
-          call.function?.name || "unknown",
-          {}
-        );
+        await onToolStart?.(call.function?.name || 'unknown', {});
 
         messages.push({
-          role: "tool",
+          role: 'tool',
           tool_call_id: call.id,
           content: JSON.stringify({
             success: false,
-            error: "The model produced invalid JSON arguments."
-          })
+            error: 'The model produced invalid JSON arguments.',
+          }),
         });
 
         continue;
       }
 
-      await onToolStart?.(
-        call.function?.name || "unknown",
-        args
-      );
+      await onToolStart?.(call.function?.name || 'unknown', args);
 
       let result;
 
       try {
-        result = await executeTool(
-          call.function?.name,
-          args
-        );
+        result = await executeTool(call.function?.name, args);
       } catch (error) {
         result = {
           success: false,
-          error:
-            error?.message ||
-            "Tool execution failed."
+          error: error?.message || 'Tool execution failed.',
         };
       }
 
       messages.push({
-        role: "tool",
+        role: 'tool',
         tool_call_id: call.id,
-        content: JSON.stringify(result)
+        content: JSON.stringify(result),
       });
     }
   }
 
-  throw new NVIDIAError(
-    "Maximum AI tool-call iterations reached."
-  );
+  throw new NVIDIAError('Maximum AI tool-call iterations reached.');
 }

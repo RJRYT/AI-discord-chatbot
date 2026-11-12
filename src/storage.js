@@ -1,22 +1,25 @@
-import fs from "node:fs/promises";
-import path from "node:path";
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
-const DATA_DIR = path.resolve("data");
-const FILE = path.join(DATA_DIR, "permissions.json");
+const DATA_DIR = path.resolve('data');
+const FILE = path.join(DATA_DIR, 'permissions.json');
 
 const DEFAULT_DATA = { guilds: {} };
 
 async function ensureFile() {
   await fs.mkdir(DATA_DIR, { recursive: true });
-  try { await fs.access(FILE); }
-  catch { await fs.writeFile(FILE, JSON.stringify(DEFAULT_DATA, null, 2), "utf8"); }
+  try {
+    await fs.access(FILE);
+  } catch {
+    await fs.writeFile(FILE, JSON.stringify(DEFAULT_DATA, null, 2), 'utf8');
+  }
 }
 
 export async function loadPermissions() {
   await ensureFile();
   try {
-    const data = JSON.parse(await fs.readFile(FILE, "utf8"));
-    if (!data.guilds || typeof data.guilds !== "object") data.guilds = {};
+    const data = JSON.parse(await fs.readFile(FILE, 'utf8'));
+    if (!data.guilds || typeof data.guilds !== 'object') data.guilds = {};
     for (const guild of Object.values(data.guilds)) {
       if (!Array.isArray(guild.admins)) guild.admins = [];
       if (!Array.isArray(guild.autochatChannels)) guild.autochatChannels = [];
@@ -29,7 +32,7 @@ export async function loadPermissions() {
 
 export async function savePermissions(data) {
   await ensureFile();
-  await fs.writeFile(FILE, JSON.stringify(data, null, 2), "utf8");
+  await fs.writeFile(FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
 export function getGuildConfig(data, guildId) {

@@ -1,20 +1,20 @@
-import { createWriteStream, mkdirSync } from "node:fs";
-import { join } from "node:path";
+import { createWriteStream, mkdirSync } from 'node:fs';
+import { join } from 'node:path';
 
-const LOG_DIR = "logs";
-const ERROR_LOG_FILE = join(LOG_DIR, "errors.log");
+const LOG_DIR = 'logs';
+const ERROR_LOG_FILE = join(LOG_DIR, 'errors.log');
 
 mkdirSync(LOG_DIR, { recursive: true });
 
-const errorStream = createWriteStream(ERROR_LOG_FILE, { flags: "a" });
+const errorStream = createWriteStream(ERROR_LOG_FILE, { flags: 'a' });
 
 const colors = {
-  reset: "\x1b[0m",
-  bright: "\x1b[1m",
-  dim: "\x1b[2m",
-  red: "\x1b[31m",
-  yellow: "\x1b[33m",
-  white: "\x1b[37m",
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  dim: '\x1b[2m',
+  red: '\x1b[31m',
+  yellow: '\x1b[33m',
+  white: '\x1b[37m',
 };
 
 function formatTime() {
@@ -24,18 +24,18 @@ function formatTime() {
 
 function formatTimeDisplay() {
   const now = new Date();
-  return now.toLocaleTimeString("en-US", {
+  return now.toLocaleTimeString('en-US', {
     hour12: false,
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
   });
 }
 
 function cleanText(value) {
-  return String(value ?? "")
-    .replace(/nvapi-[A-Za-z0-9_-]+/gi, "[api-key]")
-    .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, "Bearer [redacted]")
+  return String(value ?? '')
+    .replace(/nvapi-[A-Za-z0-9_-]+/gi, '[api-key]')
+    .replace(/Bearer\s+[A-Za-z0-9._-]+/gi, 'Bearer [redacted]')
     .trim();
 }
 
@@ -45,7 +45,7 @@ function toFileLine(level, scope, message, meta = {}) {
     level,
     scope,
     message: cleanText(message),
-    ...meta
+    ...meta,
   };
   return JSON.stringify(payload);
 }
@@ -57,7 +57,7 @@ function toFileLine(level, scope, message, meta = {}) {
  * @param {object} metadata - Additional context to attach
  */
 export function logError(scope, error, metadata = {}) {
-  const err = error || new Error("Unknown error");
+  const err = error || new Error('Unknown error');
   const timeDisplay = formatTimeDisplay();
   const message = cleanText(err.message);
 
@@ -67,18 +67,18 @@ export function logError(scope, error, metadata = {}) {
     stack: err.stack,
     code: err.code,
     status: err.status,
-    ...metadata
+    ...metadata,
   };
 
   // Write structured line to error log file
-  errorStream.write(toFileLine("ERROR", scope, message, meta) + "\n");
+  errorStream.write(toFileLine('ERROR', scope, message, meta) + '\n');
 
   // Pretty console output
   console.error(
     `${colors.dim}[${timeDisplay}]${colors.reset} ` +
-    `${colors.red}${colors.bright}[ERROR]${colors.reset} ` +
-    `${colors.white}[${scope}]${colors.reset} ` +
-    `${colors.red}${message}${colors.reset}`
+      `${colors.red}${colors.bright}[ERROR]${colors.reset} ` +
+      `${colors.white}[${scope}]${colors.reset} ` +
+      `${colors.red}${message}${colors.reset}`,
   );
 
   if (err.stack) {
@@ -86,10 +86,12 @@ export function logError(scope, error, metadata = {}) {
   }
 
   const metaKeys = Object.keys(metadata).filter(
-    (k) => k !== "name" && k !== "message" && k !== "stack" && k !== "code" && k !== "status"
+    (k) => k !== 'name' && k !== 'message' && k !== 'stack' && k !== 'code' && k !== 'status',
   );
   if (metaKeys.length) {
-    console.error(`${colors.dim}  Context:${colors.reset}\n${colors.dim}${JSON.stringify(metadata, null, 2)}${colors.reset}`);
+    console.error(
+      `${colors.dim}  Context:${colors.reset}\n${colors.dim}${JSON.stringify(metadata, null, 2)}${colors.reset}`,
+    );
   }
 }
 
@@ -105,20 +107,22 @@ export function logWarning(scope, message, metadata = {}) {
 
   const meta = {
     message: cleanMsg,
-    ...metadata
+    ...metadata,
   };
 
-  errorStream.write(toFileLine("WARN", scope, cleanMsg, meta) + "\n");
+  errorStream.write(toFileLine('WARN', scope, cleanMsg, meta) + '\n');
 
   console.warn(
     `${colors.dim}[${timeDisplay}]${colors.reset} ` +
-    `${colors.yellow}${colors.bright}[WARN]${colors.reset} ` +
-    `${colors.white}[${scope}]${colors.reset} ` +
-    `${colors.yellow}${cleanMsg}${colors.reset}`
+      `${colors.yellow}${colors.bright}[WARN]${colors.reset} ` +
+      `${colors.white}[${scope}]${colors.reset} ` +
+      `${colors.yellow}${cleanMsg}${colors.reset}`,
   );
 
   if (Object.keys(metadata).length) {
-    console.warn(`${colors.dim}  Context:${colors.reset}\n${colors.dim}${JSON.stringify(metadata, null, 2)}${colors.reset}`);
+    console.warn(
+      `${colors.dim}  Context:${colors.reset}\n${colors.dim}${JSON.stringify(metadata, null, 2)}${colors.reset}`,
+    );
   }
 }
 
